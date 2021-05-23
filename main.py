@@ -34,9 +34,9 @@ class SEResNext50_32x4d(nn.Module):
         return out, loss
 
 # TO DO:
-#need to separately resize images
-#create input and output folder
-#change file paths
+# need to separately resize images - or get from abhishek
+# create input and output folder
+# change file paths - add input + jpeg
 # fix apex install and cryptacular wheel
 
 def train(fold):
@@ -44,8 +44,8 @@ def train(fold):
     # model_path = "/home/abhishek/workspace/melanoma-deep-learning"
     # df = pd.read_csv("/home/abhishek/workspace/melanoma/input/train_folds.csv")
 
-    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/"
-    model_path = "E:/Users/Weston/workspace/Detecting-Melanoma/"
+    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/___"
+    model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv")
 
     device = "cuda"
@@ -149,9 +149,14 @@ def train(fold):
 
 
 def predict(fold):
-    test_data_path = "/home/abhishek/workspace/melanoma/input/jpeg/test224/"
-    model_path = "/home/abhishek/workspace/melanoma-deep-learning"
-    df_test = pd.read_csv("/home/abhishek/workspace/melanoma/input/test.csv")
+    #test_data_path = "/home/abhishek/workspace/melanoma/input/jpeg/test224/"
+    #model_path = "/home/abhishek/workspace/melanoma-deep-learning"
+    #df_test = pd.read_csv("/home/abhishek/workspace/melanoma/input/test.csv")
+
+    test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/test224"
+    model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
+    df_test = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/test.csv")
+
     df_test.loc[:, "target"] = 0
 
     device = "cuda"
