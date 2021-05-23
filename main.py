@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import torch.nn as nn
 
-from apex import amp
+#from apex import amp
 from sklearn import metrics
 from torch.nn import functional as F
 
@@ -36,8 +36,8 @@ class SEResNext50_32x4d(nn.Module):
 # TO DO:
 # need to separately resize images - or get from abhishek
 # create input and output folder
-# change file paths - add input + jpeg
-# fix apex install and cryptacular wheel
+# change file paths - add + jpeg
+# fix apex install and cryptacular wheel -uneeded apex only available for python 3.6
 
 def train(fold):
     # training_data_path = "/home/abhishek/workspace/melanoma/input/jpeg/train224/"
@@ -116,7 +116,14 @@ def train(fold):
         mode="max"
     )
 
-    model, optimizer = amp.initialize(
+    #model, optimizer = amp.initialize(
+    #    model,
+    #    optimizer,
+    #    opt_level="O1",
+    #    verbosity=0
+    #)
+
+    model, optimizer = torch.cuda.amp.initialize(
         model,
         optimizer,
         opt_level="O1",
