@@ -38,16 +38,14 @@ class SEResNext50_32x4d(nn.Module):
 # create input and output folder
 # change file paths - add + jpeg
 # fix apex install and cryptacular wheel -uneeded apex only available for python 3.6
+# add more data augmentations with albumentation
 
 def train(fold):
-    # training_data_path = "/home/abhishek/workspace/melanoma/input/jpeg/train224/"
-    # model_path = "/home/abhishek/workspace/melanoma-deep-learning"
-    # df = pd.read_csv("/home/abhishek/workspace/melanoma/input/train_folds.csv")
-
-    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/___"
+    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/train224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv")
 
+    # add mixup maybe
     device = "cuda"
     epochs = 50
     train_bs = 32
@@ -156,10 +154,6 @@ def train(fold):
 
 
 def predict(fold):
-    #test_data_path = "/home/abhishek/workspace/melanoma/input/jpeg/test224/"
-    #model_path = "/home/abhishek/workspace/melanoma-deep-learning"
-    #df_test = pd.read_csv("/home/abhishek/workspace/melanoma/input/test.csv")
-
     test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/test224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df_test = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/test.csv")
