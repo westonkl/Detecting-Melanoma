@@ -13,8 +13,18 @@ from sklearn import metrics
 from torch.nn import functional as F
 
 from wtfml.data_loaders.image import ClassificationLoader
+#from wtfml.data_loaders.image import ClassificationDataLoader # for wtfml v0.0.3
 from wtfml.engine import Engine
 from wtfml.utils import EarlyStopping
+
+# TO DO:
+# add more data augmentations with albumentation
+# fix dataloader issues - might be device type
+
+# done
+# change file paths - add + jpeg
+# fix apex install and cryptacular wheel -uneeded apex only available for python 3.6 - done
+# fix wtfml versioning issues or implement own data loader
 
 class SEResNext50_32x4d(nn.Module):
     def __init__(self, pretrained="imagenet"):
@@ -33,15 +43,9 @@ class SEResNext50_32x4d(nn.Module):
         )
         return out, loss
 
-# TO DO:
-# need to separately resize images - or get from abhishek
-# create input and output folder
-# change file paths - add + jpeg
-# fix apex install and cryptacular wheel -uneeded apex only available for python 3.6
-# add more data augmentations with albumentation
-
 def train(fold):
-    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/train224"
+    #training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/train224"
+    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/train224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv")
 
@@ -69,11 +73,11 @@ def train(fold):
     )
 
     train_images = df_train.image_name.values.tolist()
-    train_images = [os.path.join(training_data_path, i + ".jpg") for i in train_images]
+    train_images = [os.path.join(training_data_path, i + ".png") for i in train_images]
     train_targets = df_train.target.values
 
     valid_images = df_valid.image_name.values.tolist()
-    valid_images = [os.path.join(training_data_path, i + ".jpg") for i in valid_images]
+    valid_images = [os.path.join(training_data_path, i + ".png") for i in valid_images]
     valid_targets = df_valid.target.values
 
     train_dataset = ClassificationLoader(
@@ -114,6 +118,7 @@ def train(fold):
         mode="max"
     )
 
+    # amp deprecated
     #model, optimizer = amp.initialize(
     #    model,
     #    optimizer,
@@ -121,12 +126,13 @@ def train(fold):
     #    verbosity=0
     #)
 
-    model, optimizer = torch.cuda.amp.initialize(
-        model,
-        optimizer,
-        opt_level="O1",
-        verbosity=0
-    )
+    # use this with higher torch/python version
+    #model, optimizer = torch.cuda.amp.initialize(
+    #    model,
+    #    optimizer,
+    #    opt_level="O1",
+    #    verbosity=0
+    #)
 
     es = EarlyStopping(patience=5, mode="max")
     for epoch in range(epochs):
@@ -135,12 +141,12 @@ def train(fold):
             model,
             optimizer,
             device,
-            fp16=True
+            fp16=False #set to true if using amp
         )
         predictions, valid_loss = Engine.evaluate(
             train_loader, 
             model,
-            optimizer,
+            # optimizer,
             device
         )
         predictions = np.vstack((predictions)).ravel()
@@ -154,7 +160,8 @@ def train(fold):
 
 
 def predict(fold):
-    test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/test224"
+    #test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/test224"
+    test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/test224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df_test = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/test.csv")
 
@@ -173,7 +180,7 @@ def predict(fold):
     )
 
     test_images = df_test.image_name.values.tolist()
-    test_images = [os.path.join(test_data_path, i + ".jpg") for i in test_images]
+    test_images = [os.path.join(test_data_path, i + ".png") for i in test_images]
     test_targets = df_test.target.values
 
     test_dataset = ClassificationLoader(
@@ -201,7 +208,6 @@ def predict(fold):
     )
     return np.vstack((predictions)).ravel()
 
-
 if __name__ == "__main__":
     train(fold=0)
-    predict(fold=0)
+    # predict(fold=0)
