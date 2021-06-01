@@ -13,18 +13,8 @@ from sklearn import metrics
 from torch.nn import functional as F
 
 from wtfml.data_loaders.image import ClassificationLoader
-#from wtfml.data_loaders.image import ClassificationDataLoader # for wtfml v0.0.3
 from wtfml.engine import Engine
 from wtfml.utils import EarlyStopping
-
-# TO DO:
-# add more data augmentations with albumentation
-# fix dataloader issues - might be device type
-
-# done
-# change file paths - add + jpeg
-# fix apex install and cryptacular wheel -uneeded apex only available for python 3.6 - done
-# fix wtfml versioning issues or implement own data loader
 
 class SEResNext50_32x4d(nn.Module):
     def __init__(self, pretrained="imagenet"):
@@ -44,7 +34,6 @@ class SEResNext50_32x4d(nn.Module):
         return out, loss
 
 def train(fold):
-    #training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/train224"
     training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/train224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv")
@@ -63,12 +52,14 @@ def train(fold):
     train_aug = albumentations.Compose(
         [
             albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.augmentations.transforms.Flip(),
         ]
     )
 
     valid_aug = albumentations.Compose(
         [
             albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.augmentations.transforms.Flip(),
         ]
     )
 
@@ -118,22 +109,6 @@ def train(fold):
         mode="max"
     )
 
-    # amp deprecated
-    #model, optimizer = amp.initialize(
-    #    model,
-    #    optimizer,
-    #    opt_level="O1",
-    #    verbosity=0
-    #)
-
-    # use this with higher torch/python version
-    #model, optimizer = torch.cuda.amp.initialize(
-    #    model,
-    #    optimizer,
-    #    opt_level="O1",
-    #    verbosity=0
-    #)
-
     es = EarlyStopping(patience=5, mode="max")
     for epoch in range(epochs):
         training_loss = Engine.train(
@@ -144,7 +119,8 @@ def train(fold):
             fp16=False #set to true if using amp
         )
         predictions, valid_loss = Engine.evaluate(
-            train_loader, 
+            #train_loader,
+            valid_loader, 
             model,
             # optimizer,
             device
@@ -158,13 +134,10 @@ def train(fold):
             print("early stopping")
             break
 
-
 def predict(fold):
-    #test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/jpeg/test224"
     test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/test224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
     df_test = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/test.csv")
-
     df_test.loc[:, "target"] = 0
 
     device = "cuda"
@@ -207,6 +180,7 @@ def predict(fold):
         device
     )
     return np.vstack((predictions)).ravel()
+
 
 if __name__ == "__main__":
     train(fold=0)
