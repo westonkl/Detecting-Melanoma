@@ -149,6 +149,7 @@ def predict(fold):
     test_aug = albumentations.Compose(
         [
             albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.augmentations.transforms.Flip(),
         ]
     )
 
@@ -184,4 +185,4 @@ def predict(fold):
 
 if __name__ == "__main__":
     train(fold=0)
-    # predict(fold=0)
+    predict(fold=0)
