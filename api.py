@@ -18,27 +18,23 @@ from wtfml.engine import Engine
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "E:/Users/Weston/workspace/Detecting-Melanoma/static"
-DEVICE = "cpu" #cpu with docker
+DEVICE = "cpu" #cpu with docker else gpu/tpu
 MODEL = None
 
 
 class SEResNext50_32x4d(nn.Module):
     def __init__(self, pretrained="imagenet"):
         super(SEResNext50_32x4d, self).__init__()
-        #self.base_model = pretrainedmodels.__dict__[
         self.model = pretrainedmodels.__dict__[
             "se_resnext50_32x4d"
         ](pretrained=pretrained)
-        #self.l0 = nn.Linear(2048, 1)
         self.out = nn.Linear(2048, 1)
 
     def forward(self, image, targets):
         bs, _, _, _ = image.shape
-        #x = self.base_model.features(image)
         x = self.model.features(image)
         x = F.adaptive_avg_pool2d(x, 1)
         x = x.reshape(bs, -1)
-        #out = torch.sigmoid(self.l0(x))
         out = torch.sigmoid(self.out(x))
         loss = 0
         return out, loss
@@ -94,13 +90,7 @@ def upload_predict():
             return render_template("index.html", prediction=pred, image_loc=image_file.filename)
     return render_template("index.html", prediction=0, image_loc=None)
 
-# model loading error- fix convert model.layer0... to base_model.layer0... - was a naming convention issue - full fix when ensembling fold trainings
-# to do:
-# dockerize
-# add title to html, make prediction clearer
-# add more data augmentations
-# fix apex issues
-
+# model0.bin was the name of my model, to create your own train yours using main.py
 if __name__ == "__main__":
     MODEL = SEResNext50_32x4d(pretrained=None)
     MODEL.load_state_dict(torch.load("model0.bin", map_location=torch.device(DEVICE)))
