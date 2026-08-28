@@ -33,7 +33,7 @@ def test_api_post_with_image(client, tmp_path):
     data = {"image": (io.BytesIO(b"fake_image_data"), "test_lesion.png")}
 
     with (
-        patch("api.UPLOAD_FOLDER", str(tmp_path)),
+        patch("api.UPLOAD_FOLDER", tmp_path),
         patch("api.predict", return_value=np.array([0.75])),
     ):
         response = client.post("/", data=data, content_type="multipart/form-data")

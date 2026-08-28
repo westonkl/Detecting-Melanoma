@@ -1,18 +1,22 @@
 import os
+from pathlib import Path
 
 import albumentations
 import numpy as np
 import pandas as pd
 import pretrainedmodels
 import torch
-
-# from apex import amp
 from sklearn import metrics
 from torch import nn
 from torch.nn import functional as F
 
 from dataset import ClassificationDataset
 from engine import EarlyStopping, Engine
+
+BASE_DIR = Path(__file__).resolve().parent
+INPUT_PATH = Path(os.getenv("MELANOMA_INPUT_PATH", BASE_DIR / "input"))
+MODEL_DIR = Path(os.getenv("MODEL_DIR", BASE_DIR))
+DEVICE = os.getenv("DEVICE", "cuda" if torch.cuda.is_available() else "cpu")
 
 
 class SEResNext50_32x4d(nn.Module):
@@ -34,14 +38,10 @@ class SEResNext50_32x4d(nn.Module):
 
 
 def train(fold):
-    training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/train224"
-    model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
-    df = pd.read_csv(
-        "E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv"
-    )
+    training_data_path = INPUT_PATH / "train224"
+    df = pd.read_csv(INPUT_PATH / "train_folds.csv")
 
-    # add mixup maybe
-    device = "cuda"
+    device = DEVICE
     epochs = 50
     train_bs = 32
     valid_bs = 16
@@ -65,12 +65,10 @@ def train(fold):
         ]
     )
 
-    train_images = df_train.image_name.values.tolist()
-    train_images = [os.path.join(training_data_path, i + ".png") for i in train_images]
+    train_images = [str(training_data_path / f"{img_id}.png") for img_id in df_train.image_name.values]
     train_targets = df_train.target.values
 
-    valid_images = df_valid.image_name.values.tolist()
-    valid_images = [os.path.join(training_data_path, i + ".png") for i in valid_images]
+    valid_images = [str(training_data_path / f"{img_id}.png") for img_id in df_valid.image_name.values]
     valid_targets = df_valid.target.values
 
     train_dataset = ClassificationDataset(
@@ -113,30 +111,26 @@ def train(fold):
             fp16=False,  # set to true if using amp
         )
         predictions, _valid_loss = Engine.evaluate(
-            # train_loader,
             valid_loader,
             model,
-            # optimizer,
             device,
         )
         predictions = np.vstack(predictions).ravel()
         auc = metrics.roc_auc_score(valid_targets, predictions)
         scheduler.step(auc)
         print(f"epoch={epoch}, auc={auc}")
-        es(auc, model, os.path.join(model_path, f"model{fold}.bin"))
+        es(auc, model, str(MODEL_DIR / f"model{fold}.bin"))
         if es.early_stop:
             print("early stopping")
             break
 
 
 def predict(fold):
-    test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/test224"
-    model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
-    df_test = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/test.csv")
+    test_data_path = INPUT_PATH / "test224"
+    df_test = pd.read_csv(INPUT_PATH / "test.csv")
     df_test.loc[:, "target"] = 0
 
-    device = "cuda"
-    # epochs = 50
+    device = DEVICE
     test_bs = 16
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
@@ -148,8 +142,7 @@ def predict(fold):
         ]
     )
 
-    test_images = df_test.image_name.values.tolist()
-    test_images = [os.path.join(test_data_path, i + ".png") for i in test_images]
+    test_images = [str(test_data_path / f"{img_id}.png") for img_id in df_test.image_name.values]
     test_targets = df_test.target.values
 
     test_dataset = ClassificationDataset(
@@ -164,7 +157,7 @@ def predict(fold):
     )
 
     model = SEResNext50_32x4d(pretrained="imagenet")
-    model.load_state_dict(torch.load(os.path.join(model_path, f"model{fold}.bin")))
+    model.load_state_dict(torch.load(MODEL_DIR / f"model{fold}.bin", map_location=torch.device(device)))
     model.to(device)
 
     predictions = Engine.predict(test_loader, model, device)

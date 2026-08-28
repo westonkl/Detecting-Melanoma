@@ -107,9 +107,3 @@ Run Ruff for linting and formatting:
 uv run ruff check .
 uv run ruff format .
 ```
-
----
-
-## License
-
-This project is open source and available under the standard MIT License.
