@@ -3,14 +3,6 @@ import pytest
 import torch
 from PIL import Image
 
-# Ensure backward compatibility for NumPy 2.0 with older dependencies (e.g., wtfml)
-if not hasattr(np, "Inf"):
-    np.Inf = np.inf
-if not hasattr(np, "PINF"):
-    np.PINF = np.inf
-if not hasattr(np, "NINF"):
-    np.NINF = -np.inf
-
 
 @pytest.fixture(autouse=True)
 def set_random_seed():
