@@ -7,8 +7,9 @@ import torch
 from flask import Flask, render_template, request
 from torch import nn
 from torch.nn import functional as F
-from wtfml.data_loaders.image import ClassificationLoader
-from wtfml.engine import Engine
+
+from dataset import ClassificationDataset
+from engine import Engine
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "E:/Users/Weston/workspace/Detecting-Melanoma/static"
@@ -40,17 +41,15 @@ def predict(image_path, model):
 
     test_aug = albumentations.Compose(
         [
-            albumentations.Normalize(
-                mean, std, max_pixel_value=255.0, always_apply=True
-            ),
-            albumentations.augmentations.transforms.Flip(),
+            albumentations.Normalize(mean=mean, std=std, max_pixel_value=255.0),
+            albumentations.HorizontalFlip(p=0.5),
         ]
     )
 
     test_images = [image_path]
     test_targets = [0]
 
-    test_dataset = ClassificationLoader(
+    test_dataset = ClassificationDataset(
         image_paths=test_images,
         targets=test_targets,
         resize=None,

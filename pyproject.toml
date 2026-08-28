@@ -21,7 +21,6 @@ dependencies = [
     "scikit-learn",
     "torch",
     "torchvision",
-    "wtfml",
 ]
 
 [dependency-groups]

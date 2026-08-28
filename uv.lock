@@ -182,7 +182,6 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "torch" },
     { name = "torchvision" },
-    { name = "wtfml" },
 ]
 
 [package.dev-dependencies]
@@ -204,7 +203,6 @@ requires-dist = [
     { name = "scikit-learn" },
     { name = "torch" },
     { name = "torchvision" },
-    { name = "wtfml" },
 ]
 
 [package.metadata.requires-dev]
@@ -1206,16 +1204,4 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/b2/381be8cfdee792dd117872481b6e378f85c957dd7c5bca38897b08f765fd/werkzeug-3.1.8.tar.gz", hash = "sha256:9bad61a4268dac112f1c5cd4630a56ede601b6ed420300677a869083d70a4c44", size = 875852, upload-time = "2026-04-02T18:49:14.268Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/93/8c/2e650f2afeb7ee576912636c23ddb621c91ac6a98e66dc8d29c3c69446e1/werkzeug-3.1.8-py3-none-any.whl", hash = "sha256:63a77fb8892bf28ebc3178683445222aa500e48ebad5ec77b0ad80f8726b1f50", size = 226459, upload-time = "2026-04-02T18:49:12.72Z" },
-]
-
-[[package]]
-name = "wtfml"
-version = "0.0.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "scikit-learn" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7f/bd/726885cd9a40e99d7657fdf4428aa45f04c89d9e53d2ab77917d87d97864/wtfml-0.0.3.tar.gz", hash = "sha256:f371ff85408d0ab7f04236163b743395bd1dd81a24e09bd82ff28c37210da6c5", size = 5758, upload-time = "2020-07-16T13:09:43.818Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/3e/73e4234353d8531a3060184af5fdb3f30799abb913b6309bf504f75f9065/wtfml-0.0.3-py3-none-any.whl", hash = "sha256:2387df5d4b32a81ff29389aa7367d04c5c1b199f760ea7117bbf83ff78221cf9", size = 10392, upload-time = "2020-07-16T13:09:41.366Z" },
 ]

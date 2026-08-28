@@ -10,9 +10,9 @@ import torch
 from sklearn import metrics
 from torch import nn
 from torch.nn import functional as F
-from wtfml.data_loaders.image import ClassificationLoader
-from wtfml.engine import Engine
-from wtfml.utils import EarlyStopping
+
+from dataset import ClassificationDataset
+from engine import EarlyStopping, Engine
 
 
 class SEResNext50_32x4d(nn.Module):
@@ -53,19 +53,15 @@ def train(fold):
 
     train_aug = albumentations.Compose(
         [
-            albumentations.Normalize(
-                mean, std, max_pixel_value=255.0, always_apply=True
-            ),
-            albumentations.augmentations.transforms.Flip(),
+            albumentations.Normalize(mean=mean, std=std, max_pixel_value=255.0),
+            albumentations.HorizontalFlip(p=0.5),
         ]
     )
 
     valid_aug = albumentations.Compose(
         [
-            albumentations.Normalize(
-                mean, std, max_pixel_value=255.0, always_apply=True
-            ),
-            albumentations.augmentations.transforms.Flip(),
+            albumentations.Normalize(mean=mean, std=std, max_pixel_value=255.0),
+            albumentations.HorizontalFlip(p=0.5),
         ]
     )
 
@@ -77,7 +73,7 @@ def train(fold):
     valid_images = [os.path.join(training_data_path, i + ".png") for i in valid_images]
     valid_targets = df_valid.target.values
 
-    train_dataset = ClassificationLoader(
+    train_dataset = ClassificationDataset(
         image_paths=train_images,
         targets=train_targets,
         resize=None,
@@ -88,7 +84,7 @@ def train(fold):
         train_dataset, batch_size=train_bs, shuffle=True, num_workers=4
     )
 
-    valid_dataset = ClassificationLoader(
+    valid_dataset = ClassificationDataset(
         image_paths=valid_images,
         targets=valid_targets,
         resize=None,
@@ -109,14 +105,14 @@ def train(fold):
 
     es = EarlyStopping(patience=5, mode="max")
     for epoch in range(epochs):
-        training_loss = Engine.train(
+        _training_loss = Engine.train(
             train_loader,
             model,
             optimizer,
             device,
             fp16=False,  # set to true if using amp
         )
-        predictions, valid_loss = Engine.evaluate(
+        predictions, _valid_loss = Engine.evaluate(
             # train_loader,
             valid_loader,
             model,
@@ -147,10 +143,8 @@ def predict(fold):
 
     test_aug = albumentations.Compose(
         [
-            albumentations.Normalize(
-                mean, std, max_pixel_value=255.0, always_apply=True
-            ),
-            albumentations.augmentations.transforms.Flip(),
+            albumentations.Normalize(mean=mean, std=std, max_pixel_value=255.0),
+            albumentations.HorizontalFlip(p=0.5),
         ]
     )
 
@@ -158,7 +152,7 @@ def predict(fold):
     test_images = [os.path.join(test_data_path, i + ".png") for i in test_images]
     test_targets = df_test.target.values
 
-    test_dataset = ClassificationLoader(
+    test_dataset = ClassificationDataset(
         image_paths=test_images,
         targets=test_targets,
         resize=None,

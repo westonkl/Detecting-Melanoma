@@ -21,11 +21,14 @@ Melanoma is the most serious type of skin cancer, but early detection significan
 Detecting-Melanoma/
 ├── api.py              # Flask web server and inference endpoint
 ├── create_folds.py     # Script to generate 10-fold stratified cross-validation splits
+├── dataset.py          # Native PyTorch Dataset with Albumentations integration
+├── engine.py           # Native PyTorch training, evaluation, and EarlyStopping engine
 ├── main.py             # Model definition, training loop, evaluation, and test prediction
 ├── pyproject.toml      # Project metadata, dependencies, and build configuration
 ├── README.md           # Project documentation
-└── templates/
-    └── index.html      # Frontend HTML template for image upload and prediction display
+├── templates/
+│   └── index.html      # Frontend HTML template for image upload and prediction display
+└── tests/              # Unit test suite (pytest)
 ```
 
 ---
