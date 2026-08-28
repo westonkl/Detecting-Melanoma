@@ -63,25 +63,16 @@ Detecting-Melanoma/
    cd Detecting-Melanoma
    ```
 
-2. **Create a virtual environment**:
+2. **Sync the project environment and dependencies**:
    ```bash
-   uv venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv sync
    ```
+   *This automatically creates the `.venv` virtual environment and installs all project and development dependencies defined in `uv.lock`.*
 
-3. **Install dependencies**:
+   *(Optional) To install runtime dependencies only (without dev tools):*
    ```bash
-   # Install project dependencies in editable mode
-   uv pip install -e .
-
-   # Or include development tools (ruff, pytest, black, flake8)
-   uv pip install -e ".[dev]"
+   uv sync --no-dev
    ```
-
-   > **Tip**: You can also use `uv sync` to automatically sync the project environment and lockfile:
-   > ```bash
-   > uv sync --extra dev
-   > ```
 
 ---
 
