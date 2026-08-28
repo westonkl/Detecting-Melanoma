@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     { name = "Weston King-Leatham", email = "westonkingl1@gmail.com" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.14"
 dependencies = [
     "albumentations",
     "flask",
@@ -37,3 +37,6 @@ py-modules = ["api", "create_folds", "main"]
 
 [tool.setuptools.package-data]
 "*" = ["templates/*"]
+
+[tool.ruff]
+target-version = "py314"

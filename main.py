@@ -1,42 +1,44 @@
 import os
-import torch
 
 import albumentations
-import pretrainedmodels
-
 import numpy as np
 import pandas as pd
-import torch.nn as nn
+import pretrainedmodels
+import torch
 
-#from apex import amp
+# from apex import amp
 from sklearn import metrics
+from torch import nn
 from torch.nn import functional as F
-
 from wtfml.data_loaders.image import ClassificationLoader
 from wtfml.engine import Engine
 from wtfml.utils import EarlyStopping
 
+
 class SEResNext50_32x4d(nn.Module):
     def __init__(self, pretrained="imagenet"):
-        super(SEResNext50_32x4d, self).__init__()
-        self.model = pretrainedmodels.__dict__["se_resnext50_32x4d"](pretrained = pretrained)
+        super().__init__()
+        self.model = pretrainedmodels.__dict__["se_resnext50_32x4d"](
+            pretrained=pretrained
+        )
         self.out = nn.Linear(2048, 1)
-    
+
     def forward(self, image, targets):
         bs, _, _, _ = image.shape
         x = self.model.features(image)
         x = F.adaptive_avg_pool2d(x, 1)
         x = x.reshape(bs, -1)
         out = self.out(x)
-        loss = nn.BCEWithLogitsLoss()(
-            out, targets.reshape(-1, 1).type_as(out)
-        )
+        loss = nn.BCEWithLogitsLoss()(out, targets.reshape(-1, 1).type_as(out))
         return out, loss
+
 
 def train(fold):
     training_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/train224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
-    df = pd.read_csv("E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv")
+    df = pd.read_csv(
+        "E:/Users/Weston/workspace/Detecting-Melanoma/input/train_folds.csv"
+    )
 
     # add mixup maybe
     device = "cuda"
@@ -51,14 +53,18 @@ def train(fold):
 
     train_aug = albumentations.Compose(
         [
-            albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.Normalize(
+                mean, std, max_pixel_value=255.0, always_apply=True
+            ),
             albumentations.augmentations.transforms.Flip(),
         ]
     )
 
     valid_aug = albumentations.Compose(
         [
-            albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.Normalize(
+                mean, std, max_pixel_value=255.0, always_apply=True
+            ),
             albumentations.augmentations.transforms.Flip(),
         ]
     )
@@ -75,28 +81,22 @@ def train(fold):
         image_paths=train_images,
         targets=train_targets,
         resize=None,
-        augmentations=train_aug
+        augmentations=train_aug,
     )
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset,
-        batch_size=train_bs,
-        shuffle=True,
-        num_workers=4
+        train_dataset, batch_size=train_bs, shuffle=True, num_workers=4
     )
 
     valid_dataset = ClassificationLoader(
         image_paths=valid_images,
         targets=valid_targets,
         resize=None,
-        augmentations=valid_aug
+        augmentations=valid_aug,
     )
 
     valid_loader = torch.utils.data.DataLoader(
-        valid_dataset,
-        batch_size=valid_bs,
-        shuffle=False,
-        num_workers=4
+        valid_dataset, batch_size=valid_bs, shuffle=False, num_workers=4
     )
 
     model = SEResNext50_32x4d(pretrained="imagenet")
@@ -104,28 +104,26 @@ def train(fold):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        patience=3,
-        mode="max"
+        optimizer, patience=3, mode="max"
     )
 
     es = EarlyStopping(patience=5, mode="max")
     for epoch in range(epochs):
         training_loss = Engine.train(
-            train_loader, 
+            train_loader,
             model,
             optimizer,
             device,
-            fp16=False #set to true if using amp
+            fp16=False,  # set to true if using amp
         )
         predictions, valid_loss = Engine.evaluate(
-            #train_loader,
-            valid_loader, 
+            # train_loader,
+            valid_loader,
             model,
             # optimizer,
-            device
+            device,
         )
-        predictions = np.vstack((predictions)).ravel()
+        predictions = np.vstack(predictions).ravel()
         auc = metrics.roc_auc_score(valid_targets, predictions)
         scheduler.step(auc)
         print(f"epoch={epoch}, auc={auc}")
@@ -134,6 +132,7 @@ def train(fold):
             print("early stopping")
             break
 
+
 def predict(fold):
     test_data_path = "E:/Users/Weston/workspace/Detecting-Melanoma/input/test224"
     model_path = "E:/Users/Weston/workspace/Detecting-Melanoma"
@@ -141,14 +140,16 @@ def predict(fold):
     df_test.loc[:, "target"] = 0
 
     device = "cuda"
-    epochs = 50
+    # epochs = 50
     test_bs = 16
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
 
     test_aug = albumentations.Compose(
         [
-            albumentations.Normalize(mean, std, max_pixel_value=255.0, always_apply=True),
+            albumentations.Normalize(
+                mean, std, max_pixel_value=255.0, always_apply=True
+            ),
             albumentations.augmentations.transforms.Flip(),
         ]
     )
@@ -161,26 +162,19 @@ def predict(fold):
         image_paths=test_images,
         targets=test_targets,
         resize=None,
-        augmentations=test_aug
+        augmentations=test_aug,
     )
 
     test_loader = torch.utils.data.DataLoader(
-        test_dataset,
-        batch_size=test_bs,
-        shuffle=False,
-        num_workers=4
+        test_dataset, batch_size=test_bs, shuffle=False, num_workers=4
     )
 
     model = SEResNext50_32x4d(pretrained="imagenet")
     model.load_state_dict(torch.load(os.path.join(model_path, f"model{fold}.bin")))
     model.to(device)
 
-    predictions = Engine.predict(
-        test_loader,
-        model,
-        device
-    )
-    return np.vstack((predictions)).ravel()
+    predictions = Engine.predict(test_loader, model, device)
+    return np.vstack(predictions).ravel()
 
 
 if __name__ == "__main__":
