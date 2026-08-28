@@ -40,10 +40,16 @@ Detecting-Melanoma/
 
 ---
 
-## Installation
+## Installation & Setup with `uv`
 
 ### Prerequisites
-- Python 3.8+
+- [uv](https://docs.astral.sh/uv/) installed on your system:
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  # Or via Homebrew
+  brew install uv
+  ```
 - PyTorch (CUDA-enabled GPU recommended for training, CPU supported for inference)
 
 ### Setup
@@ -54,46 +60,59 @@ Detecting-Melanoma/
    cd Detecting-Melanoma
    ```
 
-2. **Create and activate a virtual environment**:
+2. **Create a virtual environment**:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   uv venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. **Install dependencies**:
    ```bash
-   pip install -e .
+   # Install project dependencies in editable mode
+   uv pip install -e .
+
+   # Or include development tools (ruff, pytest, black, flake8)
+   uv pip install -e ".[dev]"
    ```
 
-   For development tools (linters, formatters, pytest):
-   ```bash
-   pip install -e ".[dev]"
-   ```
+   > **Tip**: You can also use `uv sync` to automatically sync the project environment and lockfile:
+   > ```bash
+   > uv sync --extra dev
+   > ```
 
 ---
 
 ## Usage
 
+You can execute any script directly using `uv run` (which automatically uses the project environment) or run with `python` inside an activated virtual environment.
+
 ### 1. Prepare Cross-Validation Folds
 Split the dataset into 10 stratified folds:
 ```bash
-python create_folds.py
+uv run create_folds.py
 ```
 This generates `train_folds.csv` with fold assignments.
 
 ### 2. Train the Model
 Train the SE-ResNeXt-50 model on a chosen fold:
 ```bash
-python main.py
+uv run main.py
 ```
 Trained weights will be saved as `model{fold}.bin` upon achieving improved validation ROC-AUC scores.
 
 ### 3. Run the Web Application
 Launch the Flask inference server:
 ```bash
-python api.py
+uv run api.py
 ```
 Navigate to `http://localhost:12000` in your web browser to upload lesion images and view malignancy predictions.
+
+### 4. Code Quality & Linting
+Run Ruff for linting and formatting:
+```bash
+uv run ruff check .
+uv run ruff format .
+```
 
 ---
 

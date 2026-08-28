@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
 
 [project]
 name = "detecting-melanoma"
@@ -24,7 +24,7 @@ dependencies = [
     "wtfml",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "black",
     "flake8",
@@ -32,11 +32,12 @@ dev = [
     "ruff",
 ]
 
-[tool.setuptools]
-py-modules = ["api", "create_folds", "main"]
-
-[tool.setuptools.package-data]
-"*" = ["templates/*"]
+[tool.uv]
+package = false
 
 [tool.ruff]
 target-version = "py314"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
