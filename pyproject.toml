@@ -1,0 +1,42 @@
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "detecting-melanoma"
+version = "0.1.0"
+description = "Detecting melanoma with deep learning"
+readme = "README.md"
+authors = [
+    { name = "Weston King-Leatham", email = "westonkingl1@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "albumentations",
+    "flask",
+    "numpy",
+    "pandas",
+    "pillow",
+    "pretrainedmodels",
+    "scikit-learn",
+    "torch",
+    "torchvision",
+]
+
+[dependency-groups]
+dev = [
+    "black",
+    "flake8",
+    "pytest",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py314"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
